@@ -26,8 +26,9 @@ In maven add the following dependecy to **pom.xml**:
 Assuming your app is already configured to work with Android Parse. To configure DataSync library you need to do the following:
 
 1. Your database helper class should extend <code>com.cardiomood.android.sync.ormlite.SyncDatabaseHelper</code>.
-2. All your entity classes must extends <code>com.cardiomood.android.sync.ormlite.SyncEntity</code>.
-3. For each entity-class implement a custom DAO-class that extend <code>SyncDAO<SyncEntity, Long></code>.
+2. All your entity classes that you want to be able to synchronize must extends <code>com.cardiomood.android.sync.ormlite.SyncEntity</code>.
+3. For each entity-class acustom DAO-class must be implemented. The class should extend <code>com.cardiomood.android.sync.ormlite.SyncDAO<SyncEntity, Long></code>.
+4. For all Parse classes you want to synchronize create and register corresponding java classes that extend <code>ParseObject</code>.
 
 ### Step 1. Implementing DatabaseHelper
 
