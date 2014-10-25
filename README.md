@@ -87,6 +87,7 @@ public class DatabaseHelper extends SyncDatabaseHelper {
         return exampleDao;
     }
 
+    @Override
     public <T extends SyncEntity> SyncDAO<T, Long> getSyncDao(Class<T> clazz) throws SQLException {
         if (ExampleEntity.class.equals(clazz))
             return (SyncDAO<T, Long>) getExampleDao();
