@@ -21,6 +21,8 @@ In maven add the following dependecy to **pom.xml**:
 </dependency>
 ```
 
+This library also requires Parse Android SDK.
+
 ## Configuration
 
 Assuming your app is already configured to work with Android Parse.
