@@ -15,9 +15,7 @@ public class SyncDAO<T extends SyncEntity, ID> extends BaseDaoImpl<T, ID> {
     }
 
     public T findBySyncId(String syncId) throws SQLException {
-        return queryForFirst(
-                queryBuilder().where().eq("sync_id", syncId).prepare()
-        );
+        return SyncHelper.findBySyncId(this, syncId);
     }
 
 }

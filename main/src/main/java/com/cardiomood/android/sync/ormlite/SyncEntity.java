@@ -16,9 +16,6 @@ import java.util.Date;
  */
 public abstract class SyncEntity {
 
-    @DatabaseField(columnName = "_id", generatedId = true)
-    private Long id;
-
     @DatabaseField(columnName = "sync_id", unique = true)
     private String syncId;
 
@@ -31,14 +28,6 @@ public abstract class SyncEntity {
     @DatabaseField(columnName = "deleted", dataType = DataType.BOOLEAN)
     @ParseField(name = "deleted")
     private boolean deleted;
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
 
     public String getSyncId() {
         return syncId;
