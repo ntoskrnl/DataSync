@@ -1,5 +1,4 @@
-[![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.cardiomood.android/android-data-sync/badge.svg?style=flat)](https://maven-badges.herokuapp.com/maven-central/com.cardiomood.android/android-data-sync)
-DataSync
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.cardiomood.android/android-data-sync/badge.svg?style=flat)](https://maven-badges.herokuapp.com/maven-central/com.cardiomood.android/android-data-sync) DataSync
 ========
 
 Synchronization between Parse.com and local Android database made easy. 
@@ -97,15 +96,15 @@ In your background code:
 Date syncDate = new Date();
 
 // synchronized
-syncHelper.synObjects(Example.class, ExampleEntity.class, false, new SyncHelper.SyncCallback() {
+syncHelper.synObjects(ExampleEntity.class, false, new SyncHelper.SyncCallback<ExampleEntity>() {
   
   @Override
-  public void onSaveLocally(ExampleEntity localObject, Example remoteObject) {
+  public void onSaveLocally(ExampleEntity localObject, ParseObject remoteObject) {
     // invoked before localObject is persisted locally
   }
   
   @Override
-  public void onSaveRemotely(ExampleEntity localObject, Example remoteObject) {
+  public void onSaveRemotely(ExampleEntity localObject, ParseObject remoteObject) {
     // invoked before remoteObject is saved remotely
   }
 
@@ -114,4 +113,4 @@ syncHelper.synObjects(Example.class, ExampleEntity.class, false, new SyncHelper.
 // if there were no exceptions, persist syncDate to Android preferences (or to local DB)
 ...
 ```
-In the example above, <code>Example</code> class is a custom subclass of <code>ParseObject</code>.
+In the example above, class <code>Example</code> is a custom subclass of <code>ParseObject</code>.
