@@ -72,7 +72,7 @@ public class ExampleEntity extends SyncEntity implements Serializable {
 }
 ```
 
-In addition to your OrmLite annotations, you should add corresponding annotations on each entity-class and its fields you wand to synchronize.
+In addition to your OrmLite annotations, you should add corresponding annotations on each entity-class and its fields.
 
 ## How to use
 
@@ -119,7 +119,7 @@ syncHelper.synObjects(ExampleEntity.class, false, new SyncHelper.SyncCallback<Ex
 ```
 In the example above, class <code>Example</code> is a custom subclass of <code>ParseObject</code>.
 
-### Deletions of objects
+### Deleting of objects
 
 You shouldn't delete local or remote objects. Instead, mark them as deleted and update <code>syncDate</code> field.
 
