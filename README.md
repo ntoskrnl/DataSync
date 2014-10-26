@@ -1,4 +1,5 @@
-[![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.cardiomood.android/android-data-sync/badge.svg?style=flat)](https://maven-badges.herokuapp.com/maven-central/com.cardiomood.android/android-data-sync) DataSync
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.cardiomood.android/android-data-sync/badge.svg?style=flat)](https://maven-badges.herokuapp.com/maven-central/com.cardiomood.android/android-data-sync)
+DataSync
 ========
 
 Synchronization between Parse.com and local Android database made easy. 
@@ -8,7 +9,7 @@ The library provides annotations and utility classes to help you convert your Pa
 ## Add to your project
 If you are using gradle, add the following line to the <code>dependecies</code> section of your **build.gradle**:
 ```gradle
-compile 'com.cardiomood.android:android-data-sync:0.1'
+compile 'com.cardiomood.android:android-data-sync:0.2'
 ```
 
 In maven add the following dependecy to **pom.xml**:
@@ -16,91 +17,17 @@ In maven add the following dependecy to **pom.xml**:
 <dependency>
   <groupId>com.cardiomood.android</groupId>
   <artifactId>android-data-sync</artifactId>
-  <version>0.1</version>
+  <version>0.2</version>
   <type>aar</type>
 </dependency>
 ```
 
 ## Configuration
 
-Assuming your app is already configured to work with Android Parse. To configure DataSync library you need to do the following:
+Assuming your app is already configured to work with Android Parse.
 
-1. Your database helper class should extend <code>com.cardiomood.android.sync.ormlite.SyncDatabaseHelper</code>.
-2. All your entity classes that you want to be able to synchronize must extends <code>com.cardiomood.android.sync.ormlite.SyncEntity</code>.
-3. For each entity-class acustom DAO-class must be implemented. The class should extend <code>com.cardiomood.android.sync.ormlite.SyncDAO<SyncEntity, Long></code>.
-4. For all Parse classes you want to synchronize create and register corresponding java classes that extend <code>ParseObject</code>.
-
-### Step 1. Implementing DatabaseHelper
-
-```java
-import android.content.Context;
-import android.database.sqlite.SQLiteDatabase;
-import android.util.Log;
-
-import com.cardiomood.android.sync.ormlite.SyncDAO;
-import com.cardiomood.android.sync.ormlite.SyncDatabaseHelper;
-import com.cardiomood.android.sync.ormlite.SyncEntity;
-import com.j256.ormlite.support.ConnectionSource;
-import com.j256.ormlite.table.TableUtils;
-
-import java.sql.SQLException;
-
-public class DatabaseHelper extends SyncDatabaseHelper {
-
-    private static final String TAG = DatabaseHelper.class.getSimpleName();
-
-    private static final String DATABASE_NAME   = "example.db";
-    private static final int DATABASE_VERSION   = 1;
-
-    private Context mContext;
-
-    private ExampleDAO exampleDao = null;
-
-    public DatabaseHelper(Context context) {
-        super(context, DATABASE_NAME, null, DATABASE_VERSION);
-        mContext = context;
-    }
-
-
-    @Override
-    public void onCreate(SQLiteDatabase database, ConnectionSource connectionSource) {
-        Log.d(TAG, "onCreate()");
-        try {
-            TableUtils.createTable(connectionSource, ExampleEntity.class);
-        } catch (SQLException ex) {
-            Log.e(TAG, "onCreate(): failed to create tables", ex);
-        }
-    }
-
-    @Override
-    public void onUpgrade(SQLiteDatabase database, ConnectionSource connectionSource, int oldVersion, int newVersion) {
-        // Upgrade or downgrade the database schema
-    }
-
-    public Context getContext() {
-        return mContext;
-    }
-
-    public ExampleDAO getExampleDao() throws SQLException {
-        if (exampleDao == null) {
-            exampleDao = new ExampleDAO(getConnectionSource(), ExampleEntity.class);
-        }
-        return exampleDao;
-    }
-
-    @Override
-    public <T extends SyncEntity> SyncDAO<T, Long> getSyncDao(Class<T> clazz) throws SQLException {
-        if (ExampleEntity.class.equals(clazz))
-            return (SyncDAO<T, Long>) getExampleDao();
-
-        // not supported class!!!
-        throw new IllegalArgumentException("Class " + clazz + " is not supported!");
-    }
-
-}
-```
-
-### Step 2. Implementing SyncEntity
+All you need to do is to extend <code>com.cardiomood.android.sync.ormlite.SyncEntity</code> for each
+entity class you would like to enable synchronization. Here is an example of an entity class:
 
 ```java
 import com.cardiomood.android.sync.annotations.ParseClass;
@@ -111,18 +38,26 @@ import com.j256.ormlite.field.DataType;
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
 
-@ParseClass(name = "Example") // Mapped to Parse class named "Example"
+// This class will be mapped to a Parse class named "Example"
+@ParseClass(name = "Example")
 @DatabaseTable(tableName = "examples", daoClass = ExampleDAO.class)
 public class ExampleEntity extends SyncEntity implements Serializable {
 
-    @ParseField(name = "name") // mapped to the "name" field of ParseObject
+    /** Local ID field of this entity */
+    @DatabaseField(columnName = "_id", generatedId = true)
+    private Long id;
+
+    // mapped to the "name" field of ParseObject
+    @ParseField(name = "name")
     @DatabaseField(columnName = "name")
     private String exampleName;
 
+    // mapped to the "typeId" field of ParseObject
     @DatabaseField(columnName = "type_id")
-    @ParseField // mapped to the "typeId" field of ParseObject
+    @ParseField
     private Long typeId;
 
+    // mapped to the "lastViewDate" field of ParseObject
     @DatabaseField(columnName = "last_view_date", dataType = DataType.DATE_LONG)
     @ParseField(name = "lastViewDate")
     private Date lastViewed;
@@ -133,21 +68,6 @@ public class ExampleEntity extends SyncEntity implements Serializable {
     
     // getters and setters here
     
-}
-```
-
-### Step 3. Extend SyncDao
-
-```java
-import com.cardiomood.android.sync.ormlite.SyncDAO;
-import com.j256.ormlite.support.ConnectionSource;
-
-public class ExampleDAO extends SyncDAO<ExampleEntity, Long> {
-
-    public ExampleDAO(ConnectionSource connectionSource, Class<ExampleEntity> dataClass) throws SQLException {
-        super(connectionSource, dataClass);
-    }
-
 }
 ```
 
@@ -165,7 +85,11 @@ syncHelper.setUserId(ParseUser.getCurrentUser().getObjectId());
 syncHelper.setLastSyncDate(new Date(lastSyncDate));
 ```
 
-Synchronization is performed only between objects that were updated since the latest successful synchronization. At the moment, it's completely up to you to keep track of synchronization date. If you don't specify <code>lastSyncDate</code>, the library will attempt to synchronize all objects.
+Synchronization is performed only between objects that have been modified since the latest successful
+synchronization. At the moment, it's completely up to you to keep track of synchronization date.
+If you don't specify <code>lastSyncDate</code>, the library will attempt to synchronize all objects.
+
+You must also update <code>syncDate</code> of your local objects, as this field represents last modification date.
 
 In your background code:
 ```java
@@ -177,17 +101,17 @@ syncHelper.synObjects(Example.class, ExampleEntity.class, false, new SyncHelper.
   
   @Override
   public void onSaveLocally(ExampleEntity localObject, Example remoteObject) {
-    // invoked befor localObject is persisted
+    // invoked before localObject is persisted locally
   }
   
   @Override
   public void onSaveRemotely(ExampleEntity localObject, Example remoteObject) {
-    // invoked befor remoteObject is saved
+    // invoked before remoteObject is saved remotely
   }
 
 });
 
-// if there were no exceptions, persist syncDate to Preferences
+// if there were no exceptions, persist syncDate to Android preferences (or to local DB)
 ...
 ```
-In the example above, <code>Example</code> class is a custom subclass of <code>ParseObject</code>. Version 0.1 of SyncData requires you to extend <code>ParseObject</code> class.
+In the example above, <code>Example</code> class is a custom subclass of <code>ParseObject</code>.
