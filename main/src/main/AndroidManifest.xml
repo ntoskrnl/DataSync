@@ -1,5 +1,5 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="sync.android.cardiomood.android.sync">
+    package="com.cardiomood.android.sync">
 
     <application android:allowBackup="true">
 
