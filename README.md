@@ -72,6 +72,8 @@ public class ExampleEntity extends SyncEntity implements Serializable {
 }
 ```
 
+In addition to your OrmLite annotations, you should add corresponding annotations on each entity-class and its fields you wand to synchronize.
+
 ## How to use
 
 Initialize SyncHelper object somewhere in your <code>onCreate()</code> method:
@@ -116,3 +118,26 @@ syncHelper.synObjects(ExampleEntity.class, false, new SyncHelper.SyncCallback<Ex
 ...
 ```
 In the example above, class <code>Example</code> is a custom subclass of <code>ParseObject</code>.
+
+### Deletions of objects
+
+You shouldn't delete local or remote objects. Instead, mark them as deleted and update <code>syncDate</code> field.
+
+```java
+// Obtain data-access object to manipulate the entity
+ExampleDAO dao = dbHelper.getDao(ExampleEntity.class);
+
+// obtain entity
+ExampleEntity entity = ...
+
+// mark as deleted
+entity.setDeleted(true);
+entity.setSyncDate(new Date());
+
+// persist this entity
+dao.update(entity);
+```
+
+The same refers to the remote objects on Parse server. Just set <code>deleted</code> flag to mark the object deleted.
+
+If you want data to be physically deleted, you can implement a background job in Android and/or Parse, and also remove objects in the `onSave()` method of the Parse CloudCode.
