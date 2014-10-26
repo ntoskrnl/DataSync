@@ -8,7 +8,7 @@ The library provides annotations and utility classes to help you convert your Pa
 ## Add to your project
 If you are using gradle, add the following line to the <code>dependecies</code> section of your **build.gradle**:
 ```gradle
-compile 'com.cardiomood.android:android-data-sync:0.2'
+compile 'com.cardiomood.android:android-data-sync:0.2.1'
 ```
 
 In maven add the following dependecy to **pom.xml**:
@@ -16,7 +16,7 @@ In maven add the following dependecy to **pom.xml**:
 <dependency>
   <groupId>com.cardiomood.android</groupId>
   <artifactId>android-data-sync</artifactId>
-  <version>0.2</version>
+  <version>0.2.1</version>
   <type>aar</type>
 </dependency>
 ```
