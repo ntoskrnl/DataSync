@@ -96,15 +96,15 @@ In your background code:
 Date syncDate = new Date();
 
 // synchronized
-syncHelper.synObjects(Example.class, ExampleEntity.class, false, new SyncHelper.SyncCallback() {
+syncHelper.synObjects(ExampleEntity.class, false, new SyncHelper.SyncCallback<ExampleEntity>() {
   
   @Override
-  public void onSaveLocally(ExampleEntity localObject, Example remoteObject) {
+  public void onSaveLocally(ExampleEntity localObject, ParseObject remoteObject) {
     // invoked before localObject is persisted locally
   }
   
   @Override
-  public void onSaveRemotely(ExampleEntity localObject, Example remoteObject) {
+  public void onSaveRemotely(ExampleEntity localObject, ParseObject remoteObject) {
     // invoked before remoteObject is saved remotely
   }
 
