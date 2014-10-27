@@ -6,7 +6,7 @@ Synchronization between Parse.com and local Android database made easy.
 The library provides annotations and utility classes to help you convert your Parse objects to OrmLite entities.
 
 ## Add to your project
-If you are using gradle, add the following line to the <code>dependecies</code> section of your **build.gradle**:
+If you are using gradle, add the following line to the `dependecies` section of your **build.gradle**:
 ```gradle
 compile 'com.cardiomood.android:android-data-sync:0.2.1'
 ```
@@ -21,13 +21,13 @@ In maven add the following dependecy to **pom.xml**:
 </dependency>
 ```
 
-This library also requires Parse Android SDK.
+The library already contains `Parse-1.7.1.jar`.
 
 ## Configuration
 
 Assuming your app is already configured to work with Android Parse.
 
-All you need to do is to extend <code>com.cardiomood.android.sync.ormlite.SyncEntity</code> for each
+All you need to do is to extend `com.cardiomood.android.sync.ormlite.SyncEntity` for each
 entity class you would like to enable synchronization. Here is an example of an entity class:
 
 ```java
@@ -76,7 +76,7 @@ In addition to your OrmLite annotations, you should add corresponding annotation
 
 ## How to use
 
-Initialize SyncHelper object somewhere in your <code>onCreate()</code> method:
+Initialize SyncHelper object somewhere in your `onCreate()` method:
 ```java
 
 // obtain our DatabaseHelper object
@@ -90,9 +90,9 @@ syncHelper.setLastSyncDate(new Date(lastSyncDate));
 
 Synchronization is performed only between objects that have been modified since the latest successful
 synchronization. At the moment, it's completely up to you to keep track of synchronization date.
-If you don't specify <code>lastSyncDate</code>, the library will attempt to synchronize all objects.
+If you don't specify `lastSyncDate`, the library will attempt to synchronize all objects.
 
-You must also update <code>syncDate</code> of your local objects, as this field represents last modification date.
+You must also update `syncDate` of your local objects, as this field represents last modification date.
 
 In your background code:
 ```java
@@ -117,11 +117,11 @@ syncHelper.synObjects(ExampleEntity.class, false, new SyncHelper.SyncCallback<Ex
 // if there were no exceptions, persist syncDate to Android preferences (or to local DB)
 ...
 ```
-In the example above, class <code>Example</code> is a custom subclass of <code>ParseObject</code>.
+In the example above, class `Example` is a custom subclass of `ParseObject`.
 
 ### Deleting of objects
 
-You shouldn't delete local or remote objects. Instead, mark them as deleted and update <code>syncDate</code> field.
+You shouldn't delete local or remote objects. Instead, mark them as deleted and update `syncDate` field.
 
 ```java
 // Obtain data-access object to manipulate the entity
@@ -138,6 +138,6 @@ entity.setSyncDate(new Date());
 dao.update(entity);
 ```
 
-The same refers to the remote objects on Parse server. Just set <code>deleted</code> flag to mark the object deleted.
+The same refers to the remote objects on Parse server. Just set `deleted` flag to mark the object deleted.
 
 If you want data to be physically deleted, you can implement a background job in Android and/or Parse, and also remove objects in the `onSave()` method of the Parse CloudCode.
