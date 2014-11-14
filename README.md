@@ -80,7 +80,7 @@ Initialize SyncHelper object somewhere in your `onCreate()` method:
 ```java
 
 // obtain our DatabaseHelper object
-SyncDatabaseHelper dbHelper = OpenHelperManager.getHelper(context, DatabaseHelper.class);
+OrmLiteSqliteOpenHelper dbHelper = OpenHelperManager.getHelper(context, DatabaseHelper.class);
 
 // create and initialize SyncHelper object
 SyncHelper syncHelper = new SyncHelper(dbHelper); 
