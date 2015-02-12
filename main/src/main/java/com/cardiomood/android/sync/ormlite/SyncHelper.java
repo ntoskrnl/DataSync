@@ -1,5 +1,7 @@
 package com.cardiomood.android.sync.ormlite;
 
+import android.util.Pair;
+
 import com.cardiomood.android.sync.SyncException;
 import com.cardiomood.android.sync.annotations.ParseClass;
 import com.cardiomood.android.sync.parse.ParseTools;
@@ -12,6 +14,7 @@ import com.parse.ParseObject;
 import com.parse.ParseQuery;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -106,20 +109,20 @@ public class SyncHelper {
                 where.and().eq(DB_USER_ID_FIELD, userId);
             final List<E> localObjects = where.query();
 
-            TransactionManager.callInTransaction(dbHelper.getConnectionSource(), new Callable<Void>() {
-                @Override
-                public Void call() throws Exception {
                     // create local object map
                     Map<String, E> localObjectMap = new HashMap<String, E>(localObjects.size());
                     for (E localObject : localObjects) {
                         localObjectMap.put(localObject.getSyncId(), localObject);
                     }
 
+                    List<Pair<E, ParseObject>> toSaveLocally = new ArrayList<>();
+                    List<Pair<E, ParseObject>> toSaveRemotely = new ArrayList<>();
+
                     for (ParseObject remoteObject : remoteObjects) {
                         String syncId = remoteObject.getObjectId();
-                        E localObject = (E) localObjectMap.get(syncId);
+                        E localObject = localObjectMap.get(syncId);
 
-                        if (localObject == null && !remoteObject.getBoolean(PARSE_DELETED_FIELD)) {
+                        if (localObject == null) {
                             localObject = findBySyncId(syncDao, syncId);
                             if (localObject == null) {
                                 // this object was created on the server but doesn't exist locally
@@ -128,10 +131,7 @@ public class SyncHelper {
                                 // the object exists locally but out-of-date
                                 SyncEntity.fromParseObject(remoteObject, localObject);
                             }
-                            if (callback != null) {
-                                callback.onSaveLocally(localObject, remoteObject);
-                            }
-                            syncDao.createOrUpdate(localObject);
+                            toSaveLocally.add(new Pair<>(localObject, remoteObject));
                             continue;
                         }
 
@@ -144,17 +144,11 @@ public class SyncHelper {
                             if (remoteTime > localTime) {
                                 // the remote object is newer
                                 SyncEntity.fromParseObject(remoteObject, localObject);
-                                if (callback != null) {
-                                    callback.onSaveLocally(localObject, remoteObject);
-                                }
-                                syncDao.update(localObject);
+                                toSaveLocally.add(new Pair<>(localObject, remoteObject));
                             } else if (remoteTime < localTime) {
                                 // the local objects is newer
                                 SyncEntity.toParseObject(localObject, remoteObject);
-                                if (callback != null) {
-                                    callback.onSaveRemotely(localObject, remoteObject);
-                                }
-                                remoteObject.save();
+                                toSaveRemotely.add(new Pair<>(localObject, remoteObject));
                             }
                         }
                     }
@@ -171,12 +165,7 @@ public class SyncHelper {
                         if (syncId == null) {
                             // a brand new object!
                             ParseObject remoteObject = SyncEntity.toParseObject(localObject);
-                            if (callback != null) {
-                                callback.onSaveRemotely(localObject, remoteObject);
-                            }
-                            remoteObject.save();
-                            SyncEntity.fromParseObject(remoteObject, localObject);
-                            syncDao.update(localObject);
+                            toSaveRemotely.add(new Pair<>(localObject, remoteObject));
                             continue;
                         }
 
@@ -187,11 +176,7 @@ public class SyncHelper {
 
                             // try to get it from server
                             remoteObject = ParseObject.createWithoutData(parseClass, syncId).fetch();
-                            SyncEntity.toParseObject(localObject, remoteObject);
-                            if (callback != null) {
-                                callback.onSaveRemotely(localObject, remoteObject);
-                            }
-                            remoteObject.save();
+                            toSaveRemotely.add(new Pair<>(localObject, remoteObject));
                             continue;
                         }
 
@@ -205,26 +190,59 @@ public class SyncHelper {
                             if (remoteTime > localTime) {
                                 // the remote object is newer
                                 SyncEntity.fromParseObject(remoteObject, localObject);
-                                if (callback != null) {
-                                    callback.onSaveLocally(localObject, remoteObject);
-                                }
-                                syncDao.update(localObject);
+                                toSaveLocally.add(new Pair<>(localObject, remoteObject));
                             } else if (remoteTime < localTime) {
                                 // the local objects is newer
                                 SyncEntity.toParseObject(localObject, remoteObject);
-                                if (callback != null) {
-                                    callback.onSaveRemotely(localObject, remoteObject);
-                                }
-                                remoteObject.save();
+                                toSaveRemotely.add(new Pair<>(localObject, remoteObject));
                             }
                         }
                     }
 
-                    return null;
-                }
-            });
+            if (callback != null) {
+                callback.beforeSync(toSaveLocally, toSaveRemotely);
+            }
+
+            for (Pair<E, ParseObject> p: toSaveLocally) {
+                final E localObject = p.first;
+                final ParseObject remoteObject = p.second;
+                TransactionManager.callInTransaction(dbHelper.getConnectionSource(), new Callable<Object>() {
+                    @Override
+                    public Object call() throws Exception {
+                        if (callback != null) {
+                            callback.onSaveLocally(localObject, remoteObject);
+                        }
+                        syncDao.createOrUpdate(localObject);
+                        return null;
+                    }
+                });
+
+            }
+
+            for (Pair<E, ParseObject> p: toSaveRemotely) {
+                final E localObject = p.first;
+                final ParseObject remoteObject = p.second;
+                TransactionManager.callInTransaction(dbHelper.getConnectionSource(), new Callable<Object>() {
+                    @Override
+                    public Object call() throws Exception {
+                        if (callback != null) {
+                            callback.onSaveRemotely(localObject, remoteObject);
+                        }
+                        remoteObject.save();
+                        if (localObject.getSyncId() == null) {
+                            SyncEntity.fromParseObject(remoteObject, localObject);
+                            syncDao.createOrUpdate(localObject);
+                        }
+                        return null;
+                    }
+                });
+            }
+
+            if (callback != null) {
+                callback.afterSync();
+            }
         } catch (Exception ex) {
-            throw new SyncException("Syncrhonization failed", ex);
+            throw new SyncException("Synchronization failed", ex);
         }
     }
 
@@ -248,6 +266,10 @@ public class SyncHelper {
         void onSaveLocally(E localObject, ParseObject remoteObject) throws Exception;
 
         void onSaveRemotely(E localObject, ParseObject remoteObject) throws Exception;
+
+        void beforeSync(List<Pair<E, ParseObject>> toSaveLocally, List<Pair<E, ParseObject>> toSaveRemotely);
+
+        void afterSync();
 
     }
 

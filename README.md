@@ -8,7 +8,7 @@ The library provides annotations and utility classes to help you convert your Pa
 ## Add to your project
 If you are using gradle, add the following line to the `dependecies` section of your **build.gradle**:
 ```gradle
-compile 'com.cardiomood.android:android-data-sync:0.2.1'
+compile 'com.cardiomood.android:android-data-sync:0.3'
 ```
 
 In maven add the following dependecy to **pom.xml**:
@@ -16,12 +16,12 @@ In maven add the following dependecy to **pom.xml**:
 <dependency>
   <groupId>com.cardiomood.android</groupId>
   <artifactId>android-data-sync</artifactId>
-  <version>0.2.1</version>
+  <version>0.3</version>
   <type>aar</type>
 </dependency>
 ```
 
-The library already contains `Parse-1.7.1.jar`.
+The library already contains `Parse-1.8.2.jar` (latest at the moment).
 
 ## Configuration
 
@@ -99,7 +99,7 @@ In your background code:
 // save date point
 Date syncDate = new Date();
 
-// synchronized
+// perform synchronization
 syncHelper.synObjects(ExampleEntity.class, false, new SyncHelper.SyncCallback<ExampleEntity>() {
   
   @Override
@@ -110,6 +110,17 @@ syncHelper.synObjects(ExampleEntity.class, false, new SyncHelper.SyncCallback<Ex
   @Override
   public void onSaveRemotely(ExampleEntity localObject, ParseObject remoteObject) {
     // invoked before remoteObject is saved remotely
+  }
+
+  @Override
+  public void beforeSync(List<Pair<E, ParseObject>> toSaveLocally, List<Pair<E, ParseObject>> toSaveRemotely) {
+    // invoked before synchronization to let you know which objects will be synchronized
+    // here you can modify them
+  }
+
+  @Override
+  public void afterSync() {
+    // invoked after synchronization (successfully!) is completed
   }
 
 });
