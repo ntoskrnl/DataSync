@@ -11,9 +11,6 @@ import com.parse.ParseObject;
 import java.lang.reflect.Field;
 import java.util.Date;
 
-/**
- * Created by antondanhsin on 08/10/14.
- */
 public abstract class SyncEntity {
 
     @DatabaseField(columnName = "sync_id", unique = true)

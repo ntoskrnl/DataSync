@@ -21,9 +21,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
 
-/**
- * Created by antondanhsin on 24/10/14.
- */
 public class SyncHelper {
 
     private static final String PARSE_USER_ID_FIELD = "userId";

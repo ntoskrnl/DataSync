@@ -13,9 +13,6 @@ import java.util.concurrent.Callable;
 
 import bolts.Task;
 
-/**
- * Created by danon on 14.08.2014.
- */
 public final class ParseTools {
 
     private ParseTools() {

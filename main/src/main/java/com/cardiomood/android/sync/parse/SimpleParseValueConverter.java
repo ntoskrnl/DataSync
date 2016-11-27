@@ -2,9 +2,6 @@ package com.cardiomood.android.sync.parse;
 
 import java.util.Date;
 
-/**
- * Created by antondanhsin on 18/10/14.
- */
 public class SimpleParseValueConverter implements ParseValueConverter {
 
     @Override
